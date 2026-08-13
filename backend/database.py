@@ -2,6 +2,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-engine = create_engine("sqlite:///db.sqlite")
-Base = declarative_base(engine)
+engine = create_engine("sqlite:///sensa_db.sqlite")
+Base = declarative_base()
 SessionLocal = sessionmaker(bind=engine)
