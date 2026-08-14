@@ -28,7 +28,7 @@ ALGORITHM = "HS256"
 
 db_dependency = Annotated[SessionLocal, Depends(get_db)]
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 class UserRequest(BaseModel):
     first_name: str = Field(min_length=2, max_length=50)
