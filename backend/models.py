@@ -20,14 +20,6 @@ class University(Base):
     name = Column(String)
     locations = relationship("UniversityLocation", back_populates="university")
 
-
-class UniversityLocation(Base):
-    __tablename__ = "universities_locations"
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    university_id = Column(Integer, ForeignKey("universities.id"))
-    university = relationship("University", back_populates="locations")
-
 class SensoryReport(Base):
     __tablename__ = "sensory_reports"
     id = Column(Integer, primary_key=True)
@@ -42,3 +34,12 @@ class SensoryReport(Base):
         DateTime(timezone=True),
         server_default=func.now(),
         nullable=False)
+
+
+class UniversityLocation(Base):
+    __tablename__ = "universities_locations"
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    university_id = Column(Integer, ForeignKey("universities.id"))
+    university = relationship("University", back_populates="locations")
+

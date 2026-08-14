@@ -89,3 +89,4 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
         )
     token = create_new_access_token(user.email, user.role, user.id, timedelta(seconds=30))
     return {"access_token": token, "token_type": "bearer"}
+
