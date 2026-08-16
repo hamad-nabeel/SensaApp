@@ -4,7 +4,7 @@ from typing import Annotated
 
 from sqlalchemy.orm import Session
 
-from models import SensoryReport
+from ..models import SensoryReport
 from .auth import get_current_user, get_db
 
 router = APIRouter(
@@ -53,4 +53,3 @@ async def submit_report(request: SensoryRequest, db: db_dependency, user:user_de
             "message": "Sensory report published successfully! Previous report was replaced.",
             "report": new_report
         }
-

@@ -7,10 +7,10 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel, Field
 
-from database import SessionLocal
+from ..database import SessionLocal
 from passlib.context import CryptContext
 
-from models import User
+from ..models import User
 
 def get_db():
     db = SessionLocal()
@@ -89,4 +89,3 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
         )
     token = create_new_access_token(user.email, user.role, user.id, timedelta(seconds=30))
     return {"access_token": token, "token_type": "bearer"}
-

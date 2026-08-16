@@ -2,8 +2,7 @@ from fastapi import APIRouter, status, HTTPException
 from typing import Annotated
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
-import models
-from models import University, UniversityLocation, SensoryReport
+from ..models import University, UniversityLocation, SensoryReport
 from .ambassadors import get_sensory_score
 
 from .auth import get_current_user, get_db
@@ -24,7 +23,12 @@ async def get_universities(db: db_dependency):
 @router.get("/universities/{university_id}")
 async def get_university(university_id: int, db: db_dependency):
     university = db.query(University).filter(University.id == university_id).first()
-    university_locations =[]
+    if university is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="University not found",
+    )
+    university_locations = []
     for location in university.locations:
         university_locations.append(location.name)
     return university_locations
@@ -37,11 +41,17 @@ async def get_location_report(db: db_dependency, university_id: int, location_id
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,)
     else:
         report = db.query(SensoryReport).filter(SensoryReport.location_id== university_location.id).first()
+        if report is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Sensory report not found",
+            )
         return{
-            "Overall Sensory Score": get_sensory_score(report),
-            "Crowdedness: ": report.crowdedness_level,
-            "Lighting: ": report.lighting_level,
-            "Temperature: ": report.temperature_level,
-            "Noise: ": report.noise_level,
-            "Additional Notes: ": report.note,
+            "overall_score": get_sensory_score(report),
+            "crowdedness_score: ": report.crowdedness_level,
+            "lighting_score: ": report.lighting_level,
+            "temperature_score: ": report.temperature_level,
+            "noise_score: ": report.noise_level,
+            "additional_notes: ": report.note,
+            "updated_at": report.created_at,
         }

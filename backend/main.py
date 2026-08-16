@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 
-from database import engine
-from routers import auth, users, admin, ambassadors
-import models
+from . import models
+from .database import engine
+from .routers import admin, ambassadors, auth, users
 
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}

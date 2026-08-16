@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
 
-from database import Base
+from .database import Base
 
 
 class User(Base):
@@ -42,4 +42,3 @@ class UniversityLocation(Base):
     name = Column(String)
     university_id = Column(Integer, ForeignKey("universities.id"))
     university = relationship("University", back_populates="locations")
-
