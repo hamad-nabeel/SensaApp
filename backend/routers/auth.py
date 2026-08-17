@@ -35,6 +35,7 @@ class UserRequest(BaseModel):
     last_name: str = Field(min_length=2, max_length=50)
     email: str
     password: str = Field(min_length=8, max_length=50)
+    uni_id: int = Field(min_length=1, max_length=50)
 
 
 
@@ -43,11 +44,12 @@ router=APIRouter(
     tags=["auth"],
 )
 
-def create_new_access_token(email: str, role: str, id: str, expire_delta: timedelta):
+def create_new_access_token(email: str, role: str, id: str, uni: id, expire_delta: timedelta):
     encode ={
         "email": email,
         "role": role,
         "id": id,
+        "uni": uni,
     }
     expire = datetime.utcnow() + expire_delta
     encode.update({"exp": expire})
@@ -59,12 +61,13 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         email: str = payload["email"]
         role: str = payload["role"]
         id: str = payload["id"]
+        uni: str = payload["uni"]
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
-    return {'email': email, 'role': role, 'id': id}
+    return {'email': email, 'role': role, 'id': id, 'uni': uni}
 
 @router.post("/new_account")
 async def new_account(request: UserRequest, db: db_dependency):
@@ -73,6 +76,7 @@ async def new_account(request: UserRequest, db: db_dependency):
         last_name=request.last_name,
         email=request.email,
         hashed_password=bcrypt_context.hash(request.password),
+        university_id=request.uni_id,
     )
     db.add(new_user)
     db.commit()
@@ -87,5 +91,5 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
-    token = create_new_access_token(user.email, user.role, user.id, timedelta(seconds=30))
+    token = create_new_access_token(user.email, user.role, user.id, user.university_id ,timedelta(hours=1))
     return {"access_token": token, "token_type": "bearer"}

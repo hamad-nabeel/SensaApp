@@ -4,7 +4,7 @@ from typing import Annotated
 
 from sqlalchemy.orm import Session
 
-from ..models import SensoryReport
+from ..models import SensoryReport, UpdateRequest, UniversityLocation
 from .auth import get_current_user, get_db
 
 router = APIRouter(
@@ -31,7 +31,7 @@ def get_sensory_score(report: SensoryReport):
 
 @router.post("/submit_report")
 async def submit_report(request: SensoryRequest, db: db_dependency, user:user_dependency ):
-    if user.get("role") == "viewer":
+    if not user.get("role") == "ambassador" and not user.get("role") == "admin":
         raise HTTPException(status_code=400, detail="Admin or ambassador role required")
     else:
         new_report = SensoryReport(
@@ -53,3 +53,13 @@ async def submit_report(request: SensoryRequest, db: db_dependency, user:user_de
             "message": "Sensory report published successfully! Previous report was replaced.",
             "report": new_report
         }
+
+
+@router.get('/update_requests')
+async def all_requests(db: db_dependency, user: user_dependency):
+    print(user.get("uni"))
+    if not user.get("role") == "ambassador" and not user.get("role") == "admin":
+        raise HTTPException(status_code=400, detail="Admin or ambassador role required")
+    else:
+        all_requests = db.query(UpdateRequest).join(UniversityLocation, UpdateRequest.location_id == UniversityLocation.id).filter(UniversityLocation.university_id == user.get("uni")).all()
+        return all_requests

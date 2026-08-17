@@ -12,6 +12,7 @@ class User(Base):
     email = Column(String, unique=True)
     hashed_password = Column(String)
     role = Column(String, default="viewer")
+    university_id = Column(Integer, ForeignKey("universities.id"))
 
 
 class University(Base):
@@ -35,10 +36,18 @@ class SensoryReport(Base):
         server_default=func.now(),
         nullable=False)
 
+class UpdateRequest(Base):
+    __tablename__ = "update_requests"
+    id = Column(Integer, primary_key=True)
+    location_id = Column(Integer, ForeignKey("universities_locations.id"))
+    location = relationship("UniversityLocation", back_populates="requests")
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
 
 class UniversityLocation(Base):
     __tablename__ = "universities_locations"
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    requests = relationship("UpdateRequest", back_populates="location")
     university_id = Column(Integer, ForeignKey("universities.id"))
     university = relationship("University", back_populates="locations")

@@ -30,14 +30,14 @@ class AdminRequest(BaseModel):
     last_name: str = Field(min_length=2, max_length=50)
     email: str
     password: str = Field(min_length=8, max_length=50)
-    role: str = "admin"
+    university_id: int
 
 class AmbassadorRequest(BaseModel):
     first_name: str = Field(min_length=2, max_length=50)
     last_name: str = Field(min_length=2, max_length=50)
     email: str
     password: str = Field(min_length=8, max_length=50)
-    role: str  = "ambassador"
+    university_id: int
 
 
 @router.post("/new_university")
@@ -72,7 +72,8 @@ async def create_admin(request: AdminRequest, db: db_dependency):
         last_name=request.last_name,
         email=request.email,
         hashed_password = bcrypt_context.hash(request.password),
-        role=request.role,
+        role="admin",
+        university_id=request.university_id,
     )
     db.add(new_admin)
     db.commit()
@@ -91,7 +92,8 @@ async def create_ambassador(request: AmbassadorRequest, db: db_dependency,user: 
               last_name=request.last_name,
               email=request.email,
                hashed_password=bcrypt_context.hash(request.password),
-               role=request.role,
+               role="ambassador",
+                university_id=request.university_id,
              )
             db.add(ambassador)
             db.commit()

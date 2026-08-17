@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, HTTPException
 from typing import Annotated
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
-from ..models import University, UniversityLocation, SensoryReport
+from ..models import University, UniversityLocation, SensoryReport, UpdateRequest
 from .ambassadors import get_sensory_score
 
 from .auth import get_current_user, get_db
@@ -55,3 +55,13 @@ async def get_location_report(db: db_dependency, university_id: int, location_id
             "additional_notes: ": report.note,
             "updated_at": report.created_at,
         }
+
+@router.post("/request_update")
+async def request_update(db: db_dependency, id: int):
+    new_update = UpdateRequest(
+        location_id=id,
+    )
+    db.add(new_update)
+    db.commit()
+    db.refresh(new_update)
+
