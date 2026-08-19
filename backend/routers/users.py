@@ -38,9 +38,17 @@ async def get_university(university_id: int, db: db_dependency):
 async def get_location_report(db: db_dependency, university_id: int, location_id: int):
     university_location = db.query(UniversityLocation).filter(UniversityLocation.university_id== university_id).filter(UniversityLocation.id == location_id).first()
     if university_location is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Location not found",
+        )
     else:
-        report = db.query(SensoryReport).filter(SensoryReport.location_id== university_location.id).first()
+        report = (
+            db.query(SensoryReport)
+            .filter(SensoryReport.location_id == university_location.id)
+            .order_by(SensoryReport.created_at.desc())
+            .first()
+        )
         if report is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -48,20 +56,31 @@ async def get_location_report(db: db_dependency, university_id: int, location_id
             )
         return{
             "overall_score": get_sensory_score(report),
-            "crowdedness_score: ": report.crowdedness_level,
-            "lighting_score: ": report.lighting_level,
-            "temperature_score: ": report.temperature_level,
-            "noise_score: ": report.noise_level,
-            "additional_notes: ": report.note,
+            "crowdedness_score": report.crowdedness_level,
+            "lighting_score": report.lighting_level,
+            "temperature_score": report.temperature_level,
+            "noise_score": report.noise_level,
+            "additional_notes": report.note,
             "updated_at": report.created_at,
         }
 
 @router.post("/request_update")
-async def request_update(db: db_dependency, id: int):
+async def request_update(db: db_dependency, user: user_dependency, id: int):
+    location = db.query(UniversityLocation).filter(UniversityLocation.id == id).first()
+    if location is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Location not found",
+        )
+
+    existing = db.query(UpdateRequest).filter(UpdateRequest.location_id == id).first()
+    if existing:
+        return {"message": "Update already requested", "id": existing.id}
+
     new_update = UpdateRequest(
         location_id=id,
     )
     db.add(new_update)
     db.commit()
     db.refresh(new_update)
-
+    return {"message": "Update requested successfully", "id": new_update.id}

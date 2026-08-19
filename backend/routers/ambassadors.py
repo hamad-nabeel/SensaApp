@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 from typing import Annotated
 
 from sqlalchemy.orm import Session
@@ -16,12 +16,12 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 db_dependency = Annotated[Session, Depends(get_db)]
 
 class SensoryRequest(BaseModel):
-    location_id: int
-    noise_level: int
-    crowdedness_level: int
-    lighting_level: int
-    temperature_level: int
-    note: str
+    location_id: int = Field(ge=1)
+    noise_level: int = Field(ge=1, le=5)
+    crowdedness_level: int = Field(ge=1, le=5)
+    lighting_level: int = Field(ge=1, le=5)
+    temperature_level: int = Field(ge=1, le=5)
+    note: str = Field(default="", max_length=500)
 
 
 def get_sensory_score(report: SensoryReport):
@@ -32,8 +32,17 @@ def get_sensory_score(report: SensoryReport):
 @router.post("/submit_report")
 async def submit_report(request: SensoryRequest, db: db_dependency, user:user_dependency ):
     if not user.get("role") == "ambassador" and not user.get("role") == "admin":
-        raise HTTPException(status_code=400, detail="Admin or ambassador role required")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin or ambassador role required")
     else:
+        location = db.query(UniversityLocation).filter(UniversityLocation.id == request.location_id).first()
+        if location is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Location not found",
+            )
+        university = location.university_id
+        if user.get("role") == "ambassador" and not user.get("uni") == university:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your university")
         new_report = SensoryReport(
             location_id = request.location_id
             ,noise_level = request.noise_level
@@ -57,9 +66,14 @@ async def submit_report(request: SensoryRequest, db: db_dependency, user:user_de
 
 @router.get('/update_requests')
 async def all_requests(db: db_dependency, user: user_dependency):
-    print(user.get("uni"))
     if not user.get("role") == "ambassador" and not user.get("role") == "admin":
-        raise HTTPException(status_code=400, detail="Admin or ambassador role required")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin or ambassador role required")
     else:
-        all_requests = db.query(UpdateRequest).join(UniversityLocation, UpdateRequest.location_id == UniversityLocation.id).filter(UniversityLocation.university_id == user.get("uni")).all()
-        return all_requests
+        if user.get("role") == "ambassador":
+            all_requests = db.query(UpdateRequest).join(UniversityLocation,
+                                                        UpdateRequest.location_id == UniversityLocation.id).filter(
+                UniversityLocation.university_id == user.get("uni")).all()
+            return all_requests
+        elif user.get("role") == "admin":
+            all_requests = db.query(UpdateRequest).all()
+            return all_requests

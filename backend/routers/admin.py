@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, EmailStr, Field
 from typing import Annotated
 
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.functions import user
 
 from .auth import get_current_user, get_db
 
@@ -15,11 +14,11 @@ router = APIRouter(
     tags=["admin"],
 )
 class NewUniversityRequest(BaseModel):
-    name: str
+    name: str = Field(min_length=2, max_length=100)
 
 class NewLocationRequest(BaseModel):
-    name: str
-    university_id: int
+    name: str = Field(min_length=2, max_length=100)
+    university_id: int = Field(ge=1)
 user_dependency = Annotated[dict, Depends(get_current_user)]
 db_dependency = Annotated[Session, Depends(get_db)]
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -28,72 +27,97 @@ bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 class AdminRequest(BaseModel):
     first_name: str = Field(min_length=2, max_length=50)
     last_name: str = Field(min_length=2, max_length=50)
-    email: str
+    email: EmailStr
     password: str = Field(min_length=8, max_length=50)
-    university_id: int
 
 class AmbassadorRequest(BaseModel):
     first_name: str = Field(min_length=2, max_length=50)
     last_name: str = Field(min_length=2, max_length=50)
-    email: str
+    email: EmailStr
     password: str = Field(min_length=8, max_length=50)
-    university_id: int
+    university_id: int = Field(ge=1)
+
+
+def require_admin(user: dict):
+    if user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin role required",
+        )
 
 
 @router.post("/new_university")
 async def new_university(request: NewUniversityRequest, db: db_dependency, user: user_dependency):
-    if not user.get("role") == "admin":
-        raise HTTPException(status_code=400, detail="Admin role required")
-    else:
-        university = University(
-            name=request.name,
-        )
-        db.add(university)
-        db.commit()
+    require_admin(user)
+    university = University(
+        name=request.name,
+    )
+    db.add(university)
+    db.commit()
+    db.refresh(university)
+    return university
+
 @router.post("/university_location")
 async def new_university_location(request: NewLocationRequest, db: db_dependency, user: user_dependency):
-    if not user.get("role") == "admin":
-        raise HTTPException(status_code=400, detail="Admin role required")
-    else:
-        location = UniversityLocation(
-            name=request.name,
-            university_id=request.university_id,
+    require_admin(user)
+    university = db.query(University).filter(University.id == request.university_id).first()
+    if university is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="University not found",
         )
-        db.add(location)
-        db.commit()
+
+    location = UniversityLocation(
+        name=request.name,
+        university_id=request.university_id,
+    )
+    db.add(location)
+    db.commit()
+    db.refresh(location)
+    return location
 
 @router.post("/create_admin")
-async def create_admin(request: AdminRequest, db: db_dependency):
+async def create_admin(request: AdminRequest, db: db_dependency, user: user_dependency):
+    require_admin(user)
     existing = db.query(User).filter(User.email == request.email).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
     new_admin = User(
         first_name=request.first_name,
         last_name=request.last_name,
         email=request.email,
         hashed_password = bcrypt_context.hash(request.password),
         role="admin",
-        university_id=request.university_id,
+        university_id=None
     )
     db.add(new_admin)
     db.commit()
+    db.refresh(new_admin)
+    return {"message": "Admin created successfully", "id": new_admin.id}
 
 @router.post('/create_ambassador')
 async def create_ambassador(request: AmbassadorRequest, db: db_dependency,user: user_dependency ):
-    if not user.get("role") == "admin":
-        raise HTTPException(status_code=400, detail="Admin role required")
-    else:
-        existing = db.query(User).filter(User.email == request.email).first()
-        if existing:
-            raise HTTPException(status_code=400, detail="Email already registered")
-        else:
-            ambassador = User(
-              first_name=request.first_name,
-              last_name=request.last_name,
-              email=request.email,
-               hashed_password=bcrypt_context.hash(request.password),
-               role="ambassador",
-                university_id=request.university_id,
-             )
-            db.add(ambassador)
-            db.commit()
+    require_admin(user)
+    existing = db.query(User).filter(User.email == request.email).first()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
+
+    university = db.query(University).filter(University.id == request.university_id).first()
+    if university is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="University not found",
+        )
+
+    ambassador = User(
+        first_name=request.first_name,
+        last_name=request.last_name,
+        email=request.email,
+        hashed_password=bcrypt_context.hash(request.password),
+        role="ambassador",
+        university_id=request.university_id,
+    )
+    db.add(ambassador)
+    db.commit()
+    db.refresh(ambassador)
+    return {"message": "Ambassador created successfully", "id": ambassador.id}
