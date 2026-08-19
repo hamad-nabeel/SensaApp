@@ -1,5 +1,7 @@
+import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -9,8 +11,15 @@ from . import models
 from .database import engine
 from .routers import admin, ambassadors, auth, users
 
+load_dotenv()
+
 models.Base.metadata.create_all(bind=engine)
-app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+enable_api_docs = os.getenv("ENABLE_API_DOCS", "").lower() == "true"
+app = FastAPI(
+    docs_url="/docs" if enable_api_docs else None,
+    redoc_url="/redoc" if enable_api_docs else None,
+    openapi_url="/openapi.json" if enable_api_docs else None,
+)
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 
