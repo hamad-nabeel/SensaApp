@@ -295,8 +295,9 @@ function renderRequests(requests) {
   requests.forEach((request) => {
     const item = document.createElement("div");
     item.className = "request-item";
+    const locationName = request.location_name || `Location #${request.location_id}`;
     item.innerHTML = `
-      <strong>Location #${request.location_id}</strong>
+      <strong>${escapeHtml(locationName)}</strong>
       <span>${formatDate(request.created_at)}</span>
     `;
     elements.requestsList.append(item);

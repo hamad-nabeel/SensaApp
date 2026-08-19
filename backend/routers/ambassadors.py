@@ -29,6 +29,18 @@ def get_sensory_score(report: SensoryReport):
     score = score / 4
     return score
 
+
+def format_update_requests(requests):
+    return [
+        {
+            "id": update_request.id,
+            "location_id": update_request.location_id,
+            "location_name": update_request.location.name,
+            "created_at": update_request.created_at,
+        }
+        for update_request in requests
+    ]
+
 @router.post("/submit_report")
 async def submit_report(request: SensoryRequest, db: db_dependency, user:user_dependency ):
     if not user.get("role") == "ambassador" and not user.get("role") == "admin":
@@ -73,7 +85,7 @@ async def all_requests(db: db_dependency, user: user_dependency):
             all_requests = db.query(UpdateRequest).join(UniversityLocation,
                                                         UpdateRequest.location_id == UniversityLocation.id).filter(
                 UniversityLocation.university_id == user.get("uni")).all()
-            return all_requests
+            return format_update_requests(all_requests)
         elif user.get("role") == "admin":
             all_requests = db.query(UpdateRequest).all()
-            return all_requests
+            return format_update_requests(all_requests)
