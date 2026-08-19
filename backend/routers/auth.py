@@ -5,7 +5,9 @@ from typing import Annotated
 from fastapi import Depends, APIRouter, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import JWTError, jwt
+from dotenv import load_dotenv
 from pydantic import BaseModel, EmailStr, Field
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from ..database import SessionLocal
@@ -20,9 +22,13 @@ def get_db():
     finally:
         db.close()
 
+load_dotenv()
 SECRET_KEY = os.getenv("SENSA_SECRET_KEY")
 if not SECRET_KEY:
-    raise RuntimeError("SENSA_SECRET_KEY environment variable is required")
+    raise RuntimeError(
+        "SENSA_SECRET_KEY environment variable is required. "
+        "Create a .env file from .env.example and set SENSA_SECRET_KEY."
+    )
 ALGORITHM = "HS256"
 
 ##---------
@@ -73,7 +79,8 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
 @router.post("/new_account")
 async def new_account(request: UserRequest, db: db_dependency):
-    existing = db.query(User).filter(User.email == request.email).first()
+    email = str(request.email).lower()
+    existing = db.query(User).filter(func.lower(User.email) == email).first()
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
 
@@ -87,7 +94,7 @@ async def new_account(request: UserRequest, db: db_dependency):
     new_user = User(
         first_name=request.first_name,
         last_name=request.last_name,
-        email=request.email,
+        email=email,
         hashed_password=bcrypt_context.hash(request.password),
         university_id=request.uni_id,
     )
@@ -99,7 +106,8 @@ async def new_account(request: UserRequest, db: db_dependency):
 
 @router.post("/token")
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
-    user = db.query(User).filter(User.email == form_data.username).first()
+    email = form_data.username.lower()
+    user = db.query(User).filter(func.lower(User.email) == email).first()
     if not user or not bcrypt_context.verify(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

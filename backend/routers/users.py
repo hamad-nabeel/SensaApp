@@ -30,7 +30,7 @@ async def get_university(university_id: int, db: db_dependency):
     )
     university_locations = []
     for location in university.locations:
-        university_locations.append(location.name)
+        university_locations.append({"id": location.id, "name": location.name})
     return university_locations
 
 

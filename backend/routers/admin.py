@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, EmailStr, Field
 from typing import Annotated
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from .auth import get_current_user, get_db
@@ -22,6 +24,7 @@ class NewLocationRequest(BaseModel):
 user_dependency = Annotated[dict, Depends(get_current_user)]
 db_dependency = Annotated[Session, Depends(get_db)]
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+optional_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token", auto_error=False)
 
 
 class AdminRequest(BaseModel):
@@ -38,8 +41,8 @@ class AmbassadorRequest(BaseModel):
     university_id: int = Field(ge=1)
 
 
-def require_admin(user: dict):
-    if user.get("role") != "admin":
+def require_admin(user: dict | None):
+    if user is None or user.get("role") != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin role required",
@@ -77,15 +80,24 @@ async def new_university_location(request: NewLocationRequest, db: db_dependency
     return location
 
 @router.post("/create_admin")
-async def create_admin(request: AdminRequest, db: db_dependency, user: user_dependency):
-    require_admin(user)
-    existing = db.query(User).filter(User.email == request.email).first()
+async def create_admin(
+    request: AdminRequest,
+    db: db_dependency,
+    token: Annotated[str | None, Depends(optional_oauth2_scheme)],
+):
+    admin_exists = db.query(User).filter(User.role == "admin").first() is not None
+    if admin_exists:
+        user = get_current_user(token)
+        require_admin(user)
+
+    email = str(request.email).lower()
+    existing = db.query(User).filter(func.lower(User.email) == email).first()
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
     new_admin = User(
         first_name=request.first_name,
         last_name=request.last_name,
-        email=request.email,
+        email=email,
         hashed_password = bcrypt_context.hash(request.password),
         role="admin",
         university_id=None
@@ -98,7 +110,8 @@ async def create_admin(request: AdminRequest, db: db_dependency, user: user_depe
 @router.post('/create_ambassador')
 async def create_ambassador(request: AmbassadorRequest, db: db_dependency,user: user_dependency ):
     require_admin(user)
-    existing = db.query(User).filter(User.email == request.email).first()
+    email = str(request.email).lower()
+    existing = db.query(User).filter(func.lower(User.email) == email).first()
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
 
@@ -112,7 +125,7 @@ async def create_ambassador(request: AmbassadorRequest, db: db_dependency,user: 
     ambassador = User(
         first_name=request.first_name,
         last_name=request.last_name,
-        email=request.email,
+        email=email,
         hashed_password=bcrypt_context.hash(request.password),
         role="ambassador",
         university_id=request.university_id,

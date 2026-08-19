@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SensaApp</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <button class="brand" id="homeButton" type="button" aria-label="Open universities">
+          <span class="brand-mark">S</span>
+          <span>SensaApp</span>
+        </button>
+        <nav class="nav-actions" aria-label="Main navigation">
+          <button class="icon-button" id="universitiesButton" type="button" title="Universities" aria-label="Universities">
+            <span aria-hidden="true">⌂</span>
+          </button>
+          <button class="icon-button hidden" id="ambassadorButton" type="button" title="Ambassador" aria-label="Ambassador dashboard">
+            <span aria-hidden="true">▦</span>
+          </button>
+          <button class="secondary-button" id="authButton" type="button">Login</button>
+        </nav>
+      </header>
+
+      <main>
+        <section class="view auth-view" id="loginView" aria-labelledby="loginTitle">
+          <div class="auth-panel">
+            <div>
+              <p class="eyebrow">Campus sensory reports</p>
+              <h1 id="loginTitle">Login</h1>
+            </div>
+            <form class="form-grid" id="loginForm">
+              <label>
+                Email
+                <input id="emailInput" name="email" type="email" autocomplete="email" required />
+              </label>
+              <label>
+                Password
+                <input id="passwordInput" name="password" type="password" autocomplete="current-password" required />
+              </label>
+              <button class="primary-button" type="submit">Login</button>
+            </form>
+            <p class="status-line" id="loginStatus" role="status"></p>
+          </div>
+        </section>
+
+        <section class="view hidden" id="universitiesView" aria-labelledby="universitiesTitle">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Viewing page</p>
+              <h1 id="universitiesTitle">Universities</h1>
+            </div>
+            <button class="secondary-button" id="refreshUniversitiesButton" type="button">Refresh</button>
+          </div>
+          <div class="list-grid" id="universitiesList"></div>
+          <p class="status-line" id="universitiesStatus" role="status"></p>
+        </section>
+
+        <section class="view hidden" id="locationsView" aria-labelledby="locationsTitle">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow" id="selectedUniversityLabel">University</p>
+              <h1 id="locationsTitle">Locations</h1>
+            </div>
+            <button class="secondary-button" id="backToUniversitiesButton" type="button">Back</button>
+          </div>
+          <div class="location-grid" id="locationsList"></div>
+          <p class="status-line" id="locationsStatus" role="status"></p>
+        </section>
+
+        <section class="view hidden" id="ambassadorView" aria-labelledby="ambassadorTitle">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Ambassador page</p>
+              <h1 id="ambassadorTitle">Reports</h1>
+            </div>
+            <button class="secondary-button" id="refreshRequestsButton" type="button">Refresh</button>
+          </div>
+
+          <div class="workspace-grid">
+            <form class="tool-panel form-grid" id="reportForm">
+              <h2>Submit report</h2>
+              <label>
+                Location
+                <select id="reportLocationSelect" required></select>
+              </label>
+              <label>
+                Noise
+                <input id="noiseInput" type="number" min="1" max="5" value="3" required />
+              </label>
+              <label>
+                Crowdedness
+                <input id="crowdednessInput" type="number" min="1" max="5" value="3" required />
+              </label>
+              <label>
+                Lighting
+                <input id="lightingInput" type="number" min="1" max="5" value="3" required />
+              </label>
+              <label>
+                Temperature
+                <input id="temperatureInput" type="number" min="1" max="5" value="3" required />
+              </label>
+              <label>
+                Note
+                <textarea id="noteInput" maxlength="500" rows="5"></textarea>
+              </label>
+              <button class="primary-button" type="submit">Submit</button>
+              <p class="status-line" id="reportStatus" role="status"></p>
+            </form>
+
+            <section class="tool-panel" aria-labelledby="requestsTitle">
+              <h2 id="requestsTitle">Update requests</h2>
+              <div class="request-list" id="requestsList"></div>
+              <p class="status-line" id="requestsStatus" role="status"></p>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
