@@ -10,7 +10,7 @@ from .database import engine
 from .routers import admin, ambassadors, auth, users
 
 models.Base.metadata.create_all(bind=engine)
-app = FastAPI()
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 
