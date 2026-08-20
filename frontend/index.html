@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SensaApp</title>
-    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260820-2" />
   </head>
   <body>
     <div class="app-shell">
@@ -27,8 +27,9 @@
       <main>
         <section class="view auth-view" id="loginView" aria-labelledby="loginTitle">
           <div class="auth-panel">
+            <span class="brand-mark auth-mark">S</span>
             <div>
-              <p class="eyebrow">Campus sensory reports</p>
+              <p class="eyebrow">Campus comfort reports</p>
               <h1 id="loginTitle">Login</h1>
             </div>
             <form class="form-grid" id="loginForm">
@@ -47,12 +48,22 @@
         </section>
 
         <section class="view hidden" id="universitiesView" aria-labelledby="universitiesTitle">
-          <div class="section-header">
+          <div class="section-header home-heading">
             <div>
-              <p class="eyebrow">Viewing page</p>
-              <h1 id="universitiesTitle">Universities</h1>
+              <p class="eyebrow">Good morning</p>
+              <h1 id="universitiesTitle">Campuses</h1>
             </div>
             <button class="secondary-button" id="refreshUniversitiesButton" type="button">Refresh</button>
+          </div>
+          <label class="search-field" for="campusSearchInput">
+            <span aria-hidden="true">⌕</span>
+            <input id="campusSearchInput" type="search" placeholder="Search campuses..." />
+          </label>
+          <div class="quick-strip" aria-label="Sensory categories">
+            <span><strong>♪</strong>Noise</span>
+            <span><strong>◐</strong>Lighting</span>
+            <span><strong>↔</strong>Crowds</span>
+            <span><strong>°</strong>Temp</span>
           </div>
           <div class="list-grid" id="universitiesList"></div>
           <p class="status-line" id="universitiesStatus" role="status"></p>
@@ -120,6 +131,6 @@
       </main>
     </div>
 
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=20260820-2"></script>
   </body>
 </html>

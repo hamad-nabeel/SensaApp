@@ -1,22 +1,27 @@
 import os
 from pathlib import Path
+from typing import Annotated
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+
 from . import models
 from .database import engine
 from .routers import admin, ambassadors, auth, users
+from .routers.auth import get_current_user
+
+user_dependency = Annotated[str, Depends(get_current_user)]
 
 load_dotenv()
 
 models.Base.metadata.create_all(bind=engine)
 enable_api_docs = os.getenv("ENABLE_API_DOCS", "").lower() == "true"
 app = FastAPI(
-    docs_url="/docs" if enable_api_docs else None,
+    docs_url="/docs" if enable_api_docs or user_dependency.get("role")=="admin" else None,
     redoc_url="/redoc" if enable_api_docs else None,
     openapi_url="/openapi.json" if enable_api_docs else None,
 )

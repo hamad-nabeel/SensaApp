@@ -67,8 +67,8 @@ async def submit_report(request: SensoryRequest, db: db_dependency, user:user_de
         existing_report = db.query(SensoryReport).filter(SensoryReport.location_id == new_report.location_id).first()
         if existing_report:
             db.delete(existing_report)
-            db.commit()
         db.add(new_report)
+        db.query(UpdateRequest).filter(UpdateRequest.location_id == request.location_id).delete()
         db.commit()
         return{
             "message": "Sensory report published successfully! Previous report was replaced.",

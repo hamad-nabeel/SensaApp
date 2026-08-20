@@ -23,6 +23,7 @@ const elements = {
   loginForm: document.querySelector("#loginForm"),
   loginStatus: document.querySelector("#loginStatus"),
   universitiesList: document.querySelector("#universitiesList"),
+  campusSearchInput: document.querySelector("#campusSearchInput"),
   universitiesStatus: document.querySelector("#universitiesStatus"),
   refreshUniversitiesButton: document.querySelector("#refreshUniversitiesButton"),
   selectedUniversityLabel: document.querySelector("#selectedUniversityLabel"),
@@ -131,14 +132,31 @@ async function loadUniversities() {
 
 function renderUniversities() {
   elements.universitiesList.innerHTML = "";
-  state.universities.forEach((university) => {
+  const query = elements.campusSearchInput.value.trim().toLowerCase();
+  const universities = query
+    ? state.universities.filter((university) => university.name.toLowerCase().includes(query))
+    : state.universities;
+
+  universities.forEach((university, index) => {
     const button = document.createElement("button");
     button.className = "item-button";
     button.type = "button";
-    button.innerHTML = `<strong>${escapeHtml(university.name)}</strong><span class="chevron">›</span>`;
+    button.innerHTML = `
+      <span class="campus-copy">
+        <span>${index % 2 ? "Study spaces" : "Campus comfort"}</span>
+        <strong>${escapeHtml(university.name)}</strong>
+      </span>
+      <span class="chevron">›</span>
+    `;
     button.addEventListener("click", () => openUniversity(university));
     elements.universitiesList.append(button);
   });
+
+  if (!universities.length && state.universities.length) {
+    setStatus(elements.universitiesStatus, "No campuses match that search.");
+  } else {
+    setStatus(elements.universitiesStatus, state.universities.length ? "" : "No universities found.");
+  }
 }
 
 async function openUniversity(university) {
@@ -188,24 +206,57 @@ function createLocationCard(location, report) {
     : `<p class="note-box">No report yet.</p>`;
 
   card.innerHTML = `
-    <button class="location-summary" type="button">
+    <button class="location-summary" type="button" aria-expanded="false">
       <span class="location-title">${escapeHtml(location.name)}</span>
       <span class="score-ring ${report ? "" : "score-muted"}">${scoreText}</span>
     </button>
     <div class="location-details">
-      ${details}
-      ${report?.additional_notes ? `<p class="note-box">${escapeHtml(report.additional_notes)}</p>` : ""}
-      <button class="secondary-button request-update-button" type="button">Request update</button>
+      <div class="location-details-inner">
+        ${details}
+        ${report?.additional_notes ? `<p class="note-box">${escapeHtml(report.additional_notes)}</p>` : ""}
+        <button class="secondary-button request-update-button" type="button">Request update</button>
+      </div>
     </div>
   `;
 
-  card.querySelector(".location-summary").addEventListener("click", () => {
-    card.classList.toggle("expanded");
+  const summary = card.querySelector(".location-summary");
+  const detailsPanel = card.querySelector(".location-details");
+  summary.addEventListener("click", () => {
+    toggleLocationCard(card, summary, detailsPanel);
   });
+  detailsPanel.addEventListener("transitionend", resetLocationDetailsHeight);
 
   card.querySelector(".request-update-button").addEventListener("click", () => requestUpdate(location.id));
 
   return card;
+}
+
+function toggleLocationCard(card, summary, detailsPanel) {
+  const isExpanded = card.classList.contains("expanded");
+
+  if (isExpanded) {
+    detailsPanel.style.height = `${detailsPanel.scrollHeight}px`;
+    void detailsPanel.offsetHeight;
+    card.classList.remove("expanded");
+    summary.setAttribute("aria-expanded", "false");
+    detailsPanel.style.height = "0px";
+    return;
+  }
+
+  card.classList.add("expanded");
+  summary.setAttribute("aria-expanded", "true");
+  detailsPanel.style.height = "0px";
+  void detailsPanel.offsetHeight;
+  detailsPanel.style.height = `${detailsPanel.scrollHeight}px`;
+}
+
+function resetLocationDetailsHeight(event) {
+  if (event.propertyName !== "height") return;
+
+  const detailsPanel = event.currentTarget;
+  if (detailsPanel.closest(".location-card")?.classList.contains("expanded")) {
+    detailsPanel.style.height = "auto";
+  }
 }
 
 function scoreRow(label, value) {
@@ -225,17 +276,10 @@ function labelFor(key) {
 }
 
 async function requestUpdate(locationId) {
-  if (!state.token) {
-    showView("login");
-    setStatus(elements.loginStatus, "Login to request an update.", "error");
-    return;
-  }
-
   setStatus(elements.locationsStatus, "Sending update request...");
   try {
     const data = await apiFetch(`/users/request_update?id=${locationId}`, {
       method: "POST",
-      headers: authHeaders(),
     });
     setStatus(elements.locationsStatus, data.message, "success");
   } catch (error) {
@@ -382,6 +426,7 @@ elements.universitiesButton.addEventListener("click", async () => {
 });
 
 elements.refreshUniversitiesButton.addEventListener("click", loadUniversities);
+elements.campusSearchInput.addEventListener("input", renderUniversities);
 elements.backToUniversitiesButton.addEventListener("click", () => showView("universities"));
 elements.ambassadorButton.addEventListener("click", openAmbassadorDashboard);
 elements.refreshRequestsButton.addEventListener("click", loadUpdateRequests);
