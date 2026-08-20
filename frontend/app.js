@@ -11,6 +11,7 @@ const state = {
 const views = {
   login: document.querySelector("#loginView"),
   register: document.querySelector("#registerView"),
+  terms: document.querySelector("#termsView"),
   universities: document.querySelector("#universitiesView"),
   locations: document.querySelector("#locationsView"),
   ambassador: document.querySelector("#ambassadorView"),
@@ -27,6 +28,9 @@ const elements = {
   registerForm: document.querySelector("#registerForm"),
   registerStatus: document.querySelector("#registerStatus"),
   registerUniversitySelect: document.querySelector("#registerUniversitySelect"),
+  termsAcceptedInput: document.querySelector("#termsAcceptedInput"),
+  openTermsButton: document.querySelector("#openTermsButton"),
+  closeTermsButton: document.querySelector("#closeTermsButton"),
   backToLoginButton: document.querySelector("#backToLoginButton"),
   universitiesList: document.querySelector("#universitiesList"),
   campusSearchInput: document.querySelector("#campusSearchInput"),
@@ -110,6 +114,10 @@ async function login(email, password) {
 }
 
 async function registerViewer(form) {
+  if (!elements.termsAcceptedInput.checked) {
+    throw new Error("You must agree to the Terms and Conditions to create an account.");
+  }
+
   const payload = {
     first_name: form.first_name.value.trim(),
     last_name: form.last_name.value.trim(),
@@ -491,6 +499,14 @@ elements.openRegisterButton.addEventListener("click", async () => {
 elements.backToLoginButton.addEventListener("click", () => {
   setStatus(elements.registerStatus, "");
   showView("login");
+});
+
+elements.openTermsButton.addEventListener("click", () => {
+  showView("terms");
+});
+
+elements.closeTermsButton.addEventListener("click", () => {
+  showView("register");
 });
 
 elements.authButton.addEventListener("click", () => {

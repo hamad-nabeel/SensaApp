@@ -148,6 +148,18 @@ button {
   text-decoration: underline;
 }
 
+.inline-link {
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-strong);
+  font: inherit;
+  font-weight: 850;
+  text-align: left;
+  text-decoration: underline;
+}
+
 .view {
   width: min(1060px, calc(100% - 32px));
   margin: 0 auto;
@@ -171,6 +183,31 @@ button {
 .auth-panel {
   width: min(430px, 100%);
   padding: 30px;
+}
+
+.title-block {
+  display: grid;
+  gap: 10px;
+}
+
+.auth-panel > .title-block {
+  margin: 18px 0 24px;
+}
+
+.section-header .title-block {
+  margin: 8px 0;
+}
+
+.register-panel {
+  width: min(840px, 100%);
+}
+
+.register-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.register-wide {
+  grid-column: 1 / -1;
 }
 
 .section-header {
@@ -253,6 +290,28 @@ h2 {
   line-height: 1.55;
 }
 
+.terms-panel {
+  width: min(880px, 100%);
+  margin: 0 auto;
+}
+
+.terms-copy {
+  display: grid;
+  gap: 18px;
+  padding: 22px 0 0;
+}
+
+.terms-copy h2 {
+  margin: 0 0 -8px;
+  font-size: 1rem;
+}
+
+.terms-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.62;
+}
+
 .form-grid {
   display: grid;
   gap: 16px;
@@ -264,6 +323,24 @@ label {
   color: var(--muted);
   font-size: 0.9rem;
   font-weight: 780;
+}
+
+.checkbox-field {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.checkbox-field input {
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
 }
 
 input,
@@ -576,6 +653,10 @@ textarea {
   .section-header,
   .workspace-grid {
     display: grid;
+  }
+
+  .register-grid {
+    grid-template-columns: 1fr;
   }
 
   .workspace-grid {

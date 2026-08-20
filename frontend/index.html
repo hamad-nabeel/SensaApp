@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SensaApp</title>
-    <link rel="stylesheet" href="/static/styles.css?v=20260820-5" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260820-9" />
   </head>
   <body>
     <div class="app-shell">
@@ -28,8 +28,7 @@
         <section class="view auth-view" id="loginView" aria-labelledby="loginTitle">
           <div class="auth-panel">
             <span class="brand-mark auth-mark">S</span>
-            <div>
-              <p class="eyebrow">Campus comfort reports</p>
+            <div class="title-block">
               <h1 id="loginTitle">Login</h1>
             </div>
             <form class="form-grid" id="loginForm">
@@ -49,13 +48,13 @@
         </section>
 
         <section class="view auth-view hidden" id="registerView" aria-labelledby="registerTitle">
-          <div class="auth-panel">
+          <div class="auth-panel register-panel">
             <span class="brand-mark auth-mark">S</span>
-            <div>
+            <div class="title-block">
               <p class="eyebrow">Viewer registration</p>
               <h1 id="registerTitle">Create Account</h1>
             </div>
-            <form class="form-grid" id="registerForm">
+            <form class="form-grid register-grid" id="registerForm">
               <label>
                 First name
                 <input id="registerFirstNameInput" name="first_name" type="text" autocomplete="given-name" required minlength="2" maxlength="50" />
@@ -76,16 +75,67 @@
                 University
                 <select id="registerUniversitySelect" name="uni_id" required></select>
               </label>
-              <button class="primary-button" type="submit">Create Account</button>
+              <label class="checkbox-field register-wide">
+                <input id="termsAcceptedInput" name="terms_accepted" type="checkbox" required />
+                <span>
+                  I agree to the
+                  <button class="inline-link" id="openTermsButton" type="button">Terms and Conditions</button>
+                </span>
+              </label>
+              <button class="primary-button register-wide" type="submit">Create Account</button>
             </form>
-            <button class="text-button" id="backToLoginButton" type="button">Back to login</button>
+            <button class="text-button register-wide" id="backToLoginButton" type="button">Back to login</button>
             <p class="status-line" id="registerStatus" role="status"></p>
+          </div>
+        </section>
+
+        <section class="view hidden" id="termsView" aria-labelledby="termsTitle">
+          <div class="terms-panel">
+            <div class="section-header">
+              <div class="title-block">
+                <p class="eyebrow">SensaApp</p>
+                <h1 id="termsTitle">Terms and Conditions</h1>
+              </div>
+              <button class="secondary-button" id="closeTermsButton" type="button">Back</button>
+            </div>
+            <div class="terms-copy">
+              <h2>Use of SensaApp</h2>
+              <p>
+                SensaApp provides community-submitted sensory information about campus locations. Reports may be delayed,
+                incomplete, or inaccurate, and should be used as general guidance only.
+              </p>
+
+              <h2>Accounts</h2>
+              <p>
+                You are responsible for keeping your account details secure and for providing accurate registration
+                information. Do not share your password or use another person&apos;s account.
+              </p>
+
+              <h2>Update Requests and Reports</h2>
+              <p>
+                Update requests help ambassadors identify locations that may need newer sensory reports. Submitted
+                reports and requests should be respectful, relevant, and based on genuine campus use.
+              </p>
+
+              <h2>No Emergency or Accessibility Guarantee</h2>
+              <p>
+                SensaApp is not an emergency, safety, medical, or official accessibility service. For urgent support,
+                safety concerns, or formal accessibility accommodations, contact the appropriate university service.
+              </p>
+
+              <h2>Data Use</h2>
+              <p>
+                SensaApp stores account information and app activity needed to operate the service, including update
+                requests and submitted reports. By creating an account, you agree that this information may be used to
+                provide and improve the app.
+              </p>
+            </div>
           </div>
         </section>
 
         <section class="view hidden" id="universitiesView" aria-labelledby="universitiesTitle">
           <div class="section-header home-heading">
-            <div>
+            <div class="title-block">
               <h1 id="universitiesTitle">Campuses</h1>
             </div>
             <button class="secondary-button" id="refreshUniversitiesButton" type="button">Refresh</button>
@@ -108,7 +158,7 @@
 
         <section class="view hidden" id="locationsView" aria-labelledby="locationsTitle">
           <div class="section-header">
-            <div>
+            <div class="title-block">
               <p class="eyebrow" id="selectedUniversityLabel">University</p>
               <h1 id="locationsTitle">Locations</h1>
             </div>
@@ -120,7 +170,7 @@
 
         <section class="view hidden" id="ambassadorView" aria-labelledby="ambassadorTitle">
           <div class="section-header">
-            <div>
+            <div class="title-block">
               <p class="eyebrow">Ambassador page</p>
               <h1 id="ambassadorTitle">Reports</h1>
             </div>
@@ -168,6 +218,6 @@
       </main>
     </div>
 
-    <script src="/static/app.js?v=20260820-7"></script>
+    <script src="/static/app.js?v=20260820-9"></script>
   </body>
 </html>
