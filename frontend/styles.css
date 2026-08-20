@@ -381,8 +381,19 @@ textarea {
   transition: min-height 260ms ease;
 }
 
+.location-heading {
+  display: grid;
+  gap: 7px;
+}
+
 .location-title {
   font-weight: 850;
+}
+
+.last-updated {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 760;
 }
 
 .score-ring {

@@ -234,6 +234,7 @@ function createLocationCard(location, report) {
 
   const score = Number(report?.overall_score);
   const scoreText = Number.isFinite(score) ? score.toFixed(1) : "--";
+  const lastUpdatedText = report?.updated_at ? formatRelativeTime(report.updated_at) : "No report yet";
   const details = report
     ? ["noise", "crowdedness", "lighting", "temperature"]
         .map((key) => scoreRow(labelFor(key), report[`${key}_score`]))
@@ -242,7 +243,10 @@ function createLocationCard(location, report) {
 
   card.innerHTML = `
     <button class="location-summary" type="button" aria-expanded="false">
-      <span class="location-title">${escapeHtml(location.name)}</span>
+      <span class="location-heading">
+        <span class="location-title">${escapeHtml(location.name)}</span>
+        <span class="last-updated">${escapeHtml(lastUpdatedText)}</span>
+      </span>
       <span class="score-ring ${report ? "" : "score-muted"}">${scoreText}</span>
     </button>
     <div class="location-details">
@@ -425,6 +429,21 @@ function formatDate(value) {
   if (!value) return "";
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+}
+
+function formatRelativeTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Recently";
+
+  const seconds = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (seconds < 60) return "Just now";
+  if (minutes < 60) return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
+  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+  return `${days} ${days === 1 ? "day" : "days"} ago`;
 }
 
 function escapeHtml(value) {
