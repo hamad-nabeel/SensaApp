@@ -21,7 +21,7 @@ load_dotenv()
 models.Base.metadata.create_all(bind=engine)
 enable_api_docs = os.getenv("ENABLE_API_DOCS", "").lower() == "true"
 app = FastAPI(
-    docs_url="/docs" if enable_api_docs or user_dependency.get("role")=="admin" else None,
+    docs_url="/docs" if enable_api_docs else None,
     redoc_url="/redoc" if enable_api_docs else None,
     openapi_url="/openapi.json" if enable_api_docs else None,
 )
