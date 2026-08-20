@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SensaApp</title>
-    <link rel="stylesheet" href="/static/styles.css?v=20260820-2" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260820-4" />
   </head>
   <body>
     <div class="app-shell">
@@ -43,7 +43,43 @@
               </label>
               <button class="primary-button" type="submit">Login</button>
             </form>
+            <button class="text-button" id="openRegisterButton" type="button">Create a viewing account</button>
             <p class="status-line" id="loginStatus" role="status"></p>
+          </div>
+        </section>
+
+        <section class="view auth-view hidden" id="registerView" aria-labelledby="registerTitle">
+          <div class="auth-panel">
+            <span class="brand-mark auth-mark">S</span>
+            <div>
+              <p class="eyebrow">Viewer registration</p>
+              <h1 id="registerTitle">Create Account</h1>
+            </div>
+            <form class="form-grid" id="registerForm">
+              <label>
+                First name
+                <input id="registerFirstNameInput" name="first_name" type="text" autocomplete="given-name" required minlength="2" maxlength="50" />
+              </label>
+              <label>
+                Last name
+                <input id="registerLastNameInput" name="last_name" type="text" autocomplete="family-name" required minlength="2" maxlength="50" />
+              </label>
+              <label>
+                Email
+                <input id="registerEmailInput" name="email" type="email" autocomplete="email" required />
+              </label>
+              <label>
+                Password
+                <input id="registerPasswordInput" name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="50" />
+              </label>
+              <label>
+                University
+                <select id="registerUniversitySelect" name="uni_id" required></select>
+              </label>
+              <button class="primary-button" type="submit">Create Account</button>
+            </form>
+            <button class="text-button" id="backToLoginButton" type="button">Back to login</button>
+            <p class="status-line" id="registerStatus" role="status"></p>
           </div>
         </section>
 
@@ -59,11 +95,13 @@
             <span aria-hidden="true">⌕</span>
             <input id="campusSearchInput" type="search" placeholder="Search campuses..." />
           </label>
-          <div class="quick-strip" aria-label="Sensory categories">
-            <span><strong>♪</strong>Noise</span>
-            <span><strong>◐</strong>Lighting</span>
-            <span><strong>↔</strong>Crowds</span>
-            <span><strong>°</strong>Temp</span>
+          <div class="about-panel">
+            <h2>About SensaApp</h2>
+            <p>
+              SensaApp helps students find campus spaces that match their sensory needs by showing recent reports on
+              noise, crowding, lighting, and temperature. If a location needs fresher information, anyone can request an
+              update for an ambassador to review.
+            </p>
           </div>
           <div class="list-grid" id="universitiesList"></div>
           <p class="status-line" id="universitiesStatus" role="status"></p>
@@ -131,6 +169,6 @@
       </main>
     </div>
 
-    <script src="/static/app.js?v=20260820-2"></script>
+    <script src="/static/app.js?v=20260820-5"></script>
   </body>
 </html>

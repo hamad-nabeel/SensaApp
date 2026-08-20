@@ -10,6 +10,7 @@ const state = {
 
 const views = {
   login: document.querySelector("#loginView"),
+  register: document.querySelector("#registerView"),
   universities: document.querySelector("#universitiesView"),
   locations: document.querySelector("#locationsView"),
   ambassador: document.querySelector("#ambassadorView"),
@@ -22,6 +23,11 @@ const elements = {
   homeButton: document.querySelector("#homeButton"),
   loginForm: document.querySelector("#loginForm"),
   loginStatus: document.querySelector("#loginStatus"),
+  openRegisterButton: document.querySelector("#openRegisterButton"),
+  registerForm: document.querySelector("#registerForm"),
+  registerStatus: document.querySelector("#registerStatus"),
+  registerUniversitySelect: document.querySelector("#registerUniversitySelect"),
+  backToLoginButton: document.querySelector("#backToLoginButton"),
   universitiesList: document.querySelector("#universitiesList"),
   campusSearchInput: document.querySelector("#campusSearchInput"),
   universitiesStatus: document.querySelector("#universitiesStatus"),
@@ -103,6 +109,24 @@ async function login(email, password) {
   syncAuthUi();
 }
 
+async function registerViewer(form) {
+  const payload = {
+    first_name: form.first_name.value.trim(),
+    last_name: form.last_name.value.trim(),
+    email: form.email.value.trim(),
+    password: form.password.value,
+    uni_id: Number(form.uni_id.value),
+  };
+
+  await apiFetch("/auth/new_account", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  await login(payload.email, payload.password);
+}
+
 function logout() {
   state.token = null;
   state.user = null;
@@ -124,10 +148,21 @@ async function loadUniversities() {
   try {
     state.universities = await apiFetch("/users/universities");
     renderUniversities();
+    renderRegistrationUniversities();
     setStatus(elements.universitiesStatus, state.universities.length ? "" : "No universities found.");
   } catch (error) {
     setStatus(elements.universitiesStatus, error.message, "error");
   }
+}
+
+function renderRegistrationUniversities() {
+  elements.registerUniversitySelect.innerHTML = "";
+  state.universities.forEach((university) => {
+    const option = document.createElement("option");
+    option.value = university.id;
+    option.textContent = university.name;
+    elements.registerUniversitySelect.append(option);
+  });
 }
 
 function renderUniversities() {
@@ -276,10 +311,17 @@ function labelFor(key) {
 }
 
 async function requestUpdate(locationId) {
+  if (!state.token) {
+    showView("login");
+    setStatus(elements.loginStatus, "Login or create a viewing account to request an update.", "error");
+    return;
+  }
+
   setStatus(elements.locationsStatus, "Sending update request...");
   try {
     const data = await apiFetch(`/users/request_update?id=${locationId}`, {
       method: "POST",
+      headers: authHeaders(),
     });
     setStatus(elements.locationsStatus, data.message, "success");
   } catch (error) {
@@ -405,6 +447,31 @@ elements.loginForm.addEventListener("submit", async (event) => {
   } catch (error) {
     setStatus(elements.loginStatus, error.message, "error");
   }
+});
+
+elements.registerForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  setStatus(elements.registerStatus, "Creating account...");
+  try {
+    await registerViewer(elements.registerForm);
+    elements.registerForm.reset();
+    setStatus(elements.registerStatus, "");
+    await loadUniversities();
+    showView("universities");
+  } catch (error) {
+    setStatus(elements.registerStatus, error.message, "error");
+  }
+});
+
+elements.openRegisterButton.addEventListener("click", async () => {
+  setStatus(elements.loginStatus, "");
+  if (!state.universities.length) await loadUniversities();
+  showView("register");
+});
+
+elements.backToLoginButton.addEventListener("click", () => {
+  setStatus(elements.registerStatus, "");
+  showView("login");
 });
 
 elements.authButton.addEventListener("click", () => {

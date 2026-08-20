@@ -65,7 +65,7 @@ async def get_location_report(db: db_dependency, university_id: int, location_id
         }
 
 @router.post("/request_update")
-async def request_update(db: db_dependency, id: int):
+async def request_update(db: db_dependency, user: user_dependency, id: int):
     location = db.query(UniversityLocation).filter(UniversityLocation.id == id).first()
     if location is None:
         raise HTTPException(
