@@ -180,13 +180,12 @@ function renderUniversities() {
     ? state.universities.filter((university) => university.name.toLowerCase().includes(query))
     : state.universities;
 
-  universities.forEach((university, index) => {
+  universities.forEach((university) => {
     const button = document.createElement("button");
     button.className = "item-button";
     button.type = "button";
     button.innerHTML = `
       <span class="campus-copy">
-        <span>${index % 2 ? "Study spaces" : "Campus comfort"}</span>
         <strong>${escapeHtml(university.name)}</strong>
       </span>
       <span class="chevron">›</span>
