@@ -242,6 +242,7 @@ function createLocationCard(location, report) {
 
   const score = Number(report?.overall_score);
   const scoreText = Number.isFinite(score) ? score.toFixed(1) : "--";
+  const scoreStyle = Number.isFinite(score) ? ` style="${scoreRingStyle(score)}"` : "";
   const lastUpdatedText = report?.updated_at ? formatRelativeTime(report.updated_at) : "No report yet";
   const details = report
     ? ["noise", "crowdedness", "lighting", "temperature"]
@@ -255,7 +256,7 @@ function createLocationCard(location, report) {
         <span class="location-title">${escapeHtml(location.name)}</span>
         <span class="last-updated">${escapeHtml(lastUpdatedText)}</span>
       </span>
-      <span class="score-ring ${report ? "" : "score-muted"}">${scoreText}</span>
+      <span class="score-ring ${report ? "" : "score-muted"}"${scoreStyle}>${scoreText}</span>
     </button>
     <div class="location-details">
       <div class="location-details-inner">
@@ -320,6 +321,12 @@ function scoreRow(label, value) {
 
 function labelFor(key) {
   return key.charAt(0).toUpperCase() + key.slice(1);
+}
+
+function scoreRingStyle(score) {
+  const clamped = Math.max(1, Math.min(5, score));
+  const hue = 145 - ((clamped - 1) / 4) * 145;
+  return `--score-hue: ${hue}`;
 }
 
 async function requestUpdate(locationId) {

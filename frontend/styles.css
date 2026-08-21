@@ -474,15 +474,16 @@ textarea {
 }
 
 .score-ring {
+  --score-hue: 145;
   display: grid;
   flex: 0 0 auto;
   width: 66px;
   height: 66px;
   place-items: center;
-  border: 1px solid rgba(47, 125, 98, 0.2);
+  border: 1px solid hsl(var(--score-hue) 70% 34% / 0.32);
   border-radius: 50%;
-  background: rgba(47, 125, 98, 0.09);
-  color: var(--accent-strong);
+  background: hsl(var(--score-hue) 78% 42% / 0.18);
+  color: hsl(var(--score-hue) 68% 24%);
   font-weight: 900;
   transition:
     background-color 220ms ease,
@@ -491,6 +492,8 @@ textarea {
 }
 
 .score-muted {
+  border-color: var(--line);
+  background: var(--soft);
   color: var(--muted);
 }
 
@@ -532,8 +535,8 @@ textarea {
 }
 
 .location-card.expanded .score-ring {
-  border-color: rgba(47, 125, 98, 0.34);
-  background: rgba(47, 125, 98, 0.14);
+  border-color: hsl(var(--score-hue) 70% 34% / 0.42);
+  background: hsl(var(--score-hue) 78% 42% / 0.24);
   transform: scale(1.04);
 }
 
