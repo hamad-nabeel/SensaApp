@@ -359,6 +359,37 @@ async function openAmbassadorDashboard() {
 
 async function loadReportLocations() {
   elements.reportLocationSelect.innerHTML = "";
+  const isAdmin = state.user?.role === "admin";
+
+  if (isAdmin) {
+    try {
+      if (!state.universities.length) {
+        await loadUniversities();
+      }
+
+      const universityLocations = await Promise.all(
+        state.universities.map(async (university) => ({
+          university,
+          locations: await apiFetch(`/users/universities/${university.id}`),
+        })),
+      );
+
+      universityLocations.forEach(({ university, locations }) => {
+        locations.forEach((location) => {
+          const option = document.createElement("option");
+          option.value = location.id;
+          option.textContent = `${location.name} - ${university.name}`;
+          elements.reportLocationSelect.append(option);
+        });
+      });
+
+      setStatus(elements.reportStatus, elements.reportLocationSelect.length ? "" : "No locations found.");
+    } catch (error) {
+      setStatus(elements.reportStatus, error.message, "error");
+    }
+    return;
+  }
+
   const universityId = state.user?.uni || state.currentUniversity?.id || state.universities[0]?.id;
 
   if (!universityId) {
