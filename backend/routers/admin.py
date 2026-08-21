@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from .auth import get_current_user, get_db
 
-from ..models import University, UniversityLocation, User
+from ..models import SensoryReport, UpdateRequest, University, UniversityLocation, User
 from passlib.context import CryptContext
 
 router = APIRouter(
@@ -78,6 +78,59 @@ async def new_university_location(request: NewLocationRequest, db: db_dependency
     db.commit()
     db.refresh(location)
     return location
+
+@router.delete("/universities/{university_id}")
+async def delete_university(university_id: int, db: db_dependency, user: user_dependency):
+    require_admin(user)
+    university = db.query(University).filter(University.id == university_id).first()
+    if university is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="University not found",
+        )
+
+    location_ids = [
+        location_id
+        for (location_id,) in db.query(UniversityLocation.id)
+        .filter(UniversityLocation.university_id == university_id)
+        .all()
+    ]
+
+    deleted_reports = 0
+    deleted_update_requests = 0
+    if location_ids:
+        deleted_reports = (
+            db.query(SensoryReport)
+            .filter(SensoryReport.location_id.in_(location_ids))
+            .delete(synchronize_session=False)
+        )
+        deleted_update_requests = (
+            db.query(UpdateRequest)
+            .filter(UpdateRequest.location_id.in_(location_ids))
+            .delete(synchronize_session=False)
+        )
+
+    updated_users = (
+        db.query(User)
+        .filter(User.university_id == university_id)
+        .update({User.university_id: None}, synchronize_session=False)
+    )
+    deleted_locations = (
+        db.query(UniversityLocation)
+        .filter(UniversityLocation.university_id == university_id)
+        .delete(synchronize_session=False)
+    )
+    db.delete(university)
+    db.commit()
+
+    return {
+        "message": "University deleted successfully",
+        "deleted_university_id": university_id,
+        "deleted_locations": deleted_locations,
+        "deleted_reports": deleted_reports,
+        "deleted_update_requests": deleted_update_requests,
+        "updated_users": updated_users,
+    }
 
 @router.post("/create_admin")
 async def create_admin(
